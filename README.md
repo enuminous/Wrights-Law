@@ -53,3 +53,10 @@ Outputs `results.csv` and `results.csv.summary.json`. Nothing is presented as ex
 - `requirements.txt`: dependencies
 
 Suggested repository: `enuminous/Emergentology-Wrights-Law`. This ZIP does not publish to GitHub.
+
+## Lean 4 verification
+
+The pinned [formal package](formal/VERIFICATION.md) contains kernel-checked mathematical
+statements with an explicit [coverage and obligation ledger](formal/COVERAGE.md).
+The `Lean verification` workflow builds the package and tests its strict axiom audit.
+The workflow result for a commit, rather than this link alone, establishes compilation.
