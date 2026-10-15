@@ -265,8 +265,8 @@ theorem convex_slater_multipliers
     let t := (L b + 1) / (-w j)
     have ht : 0 ≤ t := div_nonneg (by linarith) (by linarith)
     have hb' : 0 ≤ L (b + t • (Pi.single j (1 : ℝ) : Option ι → ℝ)) := hbound x _ fun k => by
-      change b k ≤ b k + t * (Pi.single j (1 : ℝ) k)
-      have hp : 0 ≤ (Pi.single j (1 : ℝ) k) := by
+      change b k ≤ b k + t * ((Pi.single j (1 : ℝ) : Option ι → ℝ) k)
+      have hp : 0 ≤ ((Pi.single j (1 : ℝ) : Option ι → ℝ) k) := by
         by_cases hk : j = k <;> simp [Pi.single_apply, hk]
       linarith [mul_nonneg ht hp]
     have htw : t * w j = -(L b + 1) := by
@@ -377,5 +377,34 @@ theorem kkt_iff_slater
     exact kkt_necessary_slater f c x grad gc hf hc hdf hdc hx hmin hslater
   · rintro ⟨μ, hμ, hcomp, hstation⟩
     exact (kkt_sufficient f c x grad gc μ hf hc hdf hdc hμ hx hcomp hstation).2
+
+/-- The relational-effect observable from FOUNDATIONS.md. -/
+def relationalEffect {E : Type*} [NormedAddCommGroup E]
+    (coupled baseline : E) (ε : ℝ) : ℝ :=
+  ‖coupled - baseline‖ / (‖baseline‖ + ε)
+
+/-- A concrete contextual-invariance theorem: a real linear isometry applied
+to both states preserves the observable. This does not postulate covariance
+of an unspecified scientific observable H. -/
+theorem relationalEffect_isometry
+    {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [NormedAddCommGroup F] [NormedSpace ℝ F]
+    (T : E →ₗᵢ[ℝ] F) (coupled baseline : E) (ε : ℝ) :
+    relationalEffect (T coupled) (T baseline) ε = relationalEffect coupled baseline ε := by
+  unfold relationalEffect
+  rw [← map_sub]
+  simp
+
+/-- A regularized ratio is invariant under a positive change of scale when
+the regularizer is scaled with the states, making the units explicit. -/
+theorem relationalEffect_scale
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (coupled baseline : E) (ε a : ℝ) (ha : 0 < a) :
+    relationalEffect (a • coupled) (a • baseline) (a * ε) =
+      relationalEffect coupled baseline ε := by
+  unfold relationalEffect
+  rw [← smul_sub, norm_smul, norm_smul, Real.norm_eq_abs, abs_of_pos ha]
+  rw [← mul_add]
+  exact mul_div_mul_left _ _ (ne_of_gt ha)
 
 end Wright
