@@ -4,7 +4,8 @@
 
 Source: [FOUNDATIONS.md](../FOUNDATIONS.md), baseline commit
 `1d7e494ec3e44d5361bd3c3264957290ed6bb6b0`.
-The definitions and hypotheses in `Foundations.lean` are the acceptance target.
+The definitions and hypotheses in `Foundations.lean` and `PeriodicField.lean`
+are the acceptance targets.
 The pinned Lean/Mathlib build and strict axiom audit must pass before a statement
 is treated as machine-checked. [CI](../.github/workflows/lean.yml) identifies the
 exact tested commit. The original source remains unchanged.
@@ -41,30 +42,6 @@ family, are allowed. Equality constraints, nonsmooth objectives and nonconvex
 global optimality are outside these theorems. Necessity is not claimed when
 strict feasibility fails.
 
-## Remaining specification work
-
-The proposed continuum field equations still lack a fixed spatial domain,
-coefficient/kernel assumptions, function spaces, boundary/initial data and a
-chosen existence, stability or conservation conclusion. Selecting these data
-changes the mathematical problem. The finite-dimensional theorems do not
-establish those PDE results.
-
-The two contextual results specify both transformation and observable. Other
-transformations or observables require their own definitions and proofs.
-Covariance of an unspecified scientific H is not inferred.
-
-No universal correction principle, physical field law, fifth force or empirical
-AGI claim follows from the formalization. Scientific applicability remains a
-hypothesis until independently tested.
-
-## Evidence discipline
-
-Every project declaration, including private declarations, is audited against
-`propext`, `Classical.choice` and `Quot.sound` only. Rejection controls exercise
-public/private axioms, placeholders and native-evaluation oracles.
-The evidence status is **unresolved** until the exact commit passes;
-thereafter only the stated mathematical results are **demonstrated**.
-
 ## Specified periodic field sector
 
 `PeriodicField.lean` fixes the previously unspecified field problem as follows:
@@ -90,3 +67,28 @@ and zero source: the characteristic solution preserves periodicity, positivity
 and total mass, and is unique among differentiable spacetime solutions. General
 velocity/source couplings and empirical identification remain separate
 obligations; no universal physical law follows.
+
+## Remaining specification work
+
+The periodic and constant-velocity targets above are now specified and proved.
+Extending them to arbitrary infinite-dimensional initial fields, nonlinear or
+state-dependent coefficients, other kernels, nonconstant velocities, sources
+or noise requires additional hypotheses and separate proofs. The source does
+not supply one universal model covering those choices.
+
+The two contextual results specify both transformation and observable. Other
+transformations or observables require their own definitions and proofs.
+Covariance of an unspecified scientific H is not inferred.
+
+No universal correction principle, physical field law, fifth force or empirical
+AGI claim follows from the formalization. Scientific applicability remains a
+hypothesis until independently tested.
+
+## Evidence discipline
+
+Every project declaration, including private declarations, is audited against
+`propext`, `Classical.choice` and `Quot.sound` only. Rejection controls exercise
+public/private axioms, placeholders and native-evaluation oracles.
+The evidence status is **unresolved** until the exact commit passes;
+thereafter only the stated mathematical results are **demonstrated**.
+
