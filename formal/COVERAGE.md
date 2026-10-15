@@ -64,3 +64,29 @@ Every project declaration, including private declarations, is audited against
 public/private axioms, placeholders and native-evaluation oracles.
 The evidence status is **unresolved** until the exact commit passes;
 thereafter only the stated mathematical results are **demonstrated**.
+
+## Specified periodic field sector
+
+`PeriodicField.lean` fixes the previously unspecified field problem as follows:
+spatial domain R/(2πZ), real even trigonometric polynomials of arbitrary finite
+degree N, constant real coefficients D, gamma and beta, kernel K(x,y)=1/(2π),
+zero external forcing, and arbitrary initial coefficients. Solutions are
+classical in space and time. The finite cosine sector is invariant under this
+PDE, so its solution is exact in that sector, not a time-stepping approximation.
+
+The module proves existence via an explicit exponential coefficient flow,
+uniqueness among differentiable coefficient solutions, periodicity, both actual
+spatial derivatives, the integral-kernel identity and the PDE itself. Squared
+coefficient norm decays at rate 2r whenever D>=0 and r<=min(gamma,gamma-beta).
+The hypotheses are structural coefficient conditions; the energy inequality is
+derived. Positive r requires gamma>0 and gamma>beta. If beta>gamma, the positive
+constant mode grows: damping without a feedback restriction is false.
+
+This closes well-posedness and stability for this authored mathematical target.
+It does not prove a solution theorem for arbitrary infinite Fourier series,
+state-dependent coefficients, arbitrary kernels, nonlinear couplings or noise.
+The independent Lambda transport equation is also closed for constant velocity
+and zero source: the characteristic solution preserves periodicity, positivity
+and total mass, and is unique among differentiable spacetime solutions. General
+velocity/source couplings and empirical identification remain separate
+obligations; no universal physical law follows.

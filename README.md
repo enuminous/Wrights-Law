@@ -62,3 +62,9 @@ The `Lean verification` workflow builds the package and tests its strict axiom a
 The workflow result for a commit, rather than this link alone, establishes compilation.
 
 The [formal coverage](formal/COVERAGE.md) includes a quadratic upper bound derived from a Lipschitz gradient, weak and strict gradient-step decrease, and necessary and sufficient convex KKT conditions under Slater's condition. Multiplier existence is proved. Linear-isometry and consistent positive-scaling invariances are proved for the relational-effect ratio. The proposed continuum fields still require a fixed PDE specification.
+
+The [periodic-field realization](formal/PeriodicField.lean) now supplies an exact
+finite cosine-sector solution of the diffusion/damping/nonlocal equation,
+uniqueness, periodicity and a quantitative stability condition. The constant
+mode supplies a counterexample when feedback exceeds damping. See the
+[coverage ledger](formal/COVERAGE.md) for its fixed domain and remaining limits.
