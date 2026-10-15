@@ -209,7 +209,8 @@ theorem convex_slater_multipliers
         have h := hf.2 hy hz hs ht hst
         change f (s • y + t • z) - f x ≤ s * (f y - f x) + t * (f z - f x)
         change f (s • y + t • z) ≤ s * f y + t * f z at h
-        nlinarith
+        have he := congrArg (fun r : ℝ => r * f x) hst
+        nlinarith [he]
     | some i => exact hc i
   let U : Set (Option ι → ℝ) := {v | ∃ y, ∀ j, V y j < v j}
   have hopen : IsOpen U := by
@@ -254,8 +255,8 @@ theorem convex_slater_multipliers
           have := hv j
           change 0 < t at ht
           linarith⟩).le
-    simpa using le_of_tendsto hlim hevent
-  let w : Option ι → ℝ := fun j => L (Pi.single j 1)
+    simpa using ge_of_tendsto hlim hevent
+  let w : Option ι → ℝ := fun j => L ((Pi.single j (1 : ℝ) : Option ι → ℝ))
   have hw (j : Option ι) : 0 ≤ w j := by
     by_contra h
     have hn : w j < 0 := lt_of_not_ge h
@@ -263,20 +264,20 @@ theorem convex_slater_multipliers
     have hb : 0 ≤ L b := hbound x b fun _ => le_rfl
     let t := (L b + 1) / (-w j)
     have ht : 0 ≤ t := div_nonneg (by linarith) (by linarith)
-    have hb' : 0 ≤ L (b + t • Pi.single j 1) := hbound x _ fun k => by
+    have hb' : 0 ≤ L (b + t • (Pi.single j (1 : ℝ) : Option ι → ℝ)) := hbound x _ fun k => by
       change b k ≤ b k + t * (Pi.single j (1 : ℝ) k)
       have hp : 0 ≤ (Pi.single j (1 : ℝ) k) := by
         by_cases hk : j = k <;> simp [Pi.single_apply, hk]
       linarith [mul_nonneg ht hp]
     have htw : t * w j = -(L b + 1) := by
       dsimp [t]
-      field_simp
+      field_simp [ne_of_lt hn]
       <;> ring
     rw [map_add, map_smul] at hb'
     change 0 ≤ L b + t * w j at hb'
     linarith
   have hrepr (v : Option ι → ℝ) : L v = ∑ j, w j * v j := by
-    have hv : v = ∑ j : Option ι, v j • Pi.single j 1 := by
+    have hv : v = ∑ j : Option ι, v j • (Pi.single j (1 : ℝ) : Option ι → ℝ) := by
       ext k
       simp [Finset.sum_apply, Pi.single_apply]
     conv_lhs => rw [hv]
@@ -294,7 +295,7 @@ theorem convex_slater_multipliers
   have hα : 0 < w none := by
     rcases (hw none).eq_or_lt with hα | hα
     · have hα0 : w none = 0 := hα.symm
-      obtain ⟨i, hi⟩ := hsome.resolve_left hα0
+      obtain ⟨i, hi⟩ := hsome.resolve_left (not_not.mpr hα0)
       have hi0 : 0 < w (some i) := lt_of_le_of_ne (hw _) (Ne.symm hi)
       have hsum : (∑ j, w (some j) * c j z) < 0 :=
         Finset.sum_neg' (fun j _ => mul_nonpos_of_nonneg_of_nonpos (hw _) (hz j).le)
