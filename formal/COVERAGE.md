@@ -24,11 +24,24 @@ The new analytic derivations use a real Hilbert space, so they include the finit
 
 The gradient model is derived rather than assumed in the new theorems. The KKT proof derives the supporting inequalities from convexity; it does not assume the desired optimality conclusion. The original baseline source remains unchanged.
 
+| `convex_slater_multipliers` | Slater's strict feasibility and global optimality imply existence of nonnegative complementary multipliers and a global Lagrangian lower bound, proved using convex separation. No multipliers are assumed. |
+| `kkt_necessary_slater` | Differentiating that Lagrangian at its minimum proves KKT stationarity. |
+| `kkt_iff_slater` | Under convexity, differentiability and Slater's condition, global optimality is equivalent to existence of KKT multipliers. |
+| `relationalEffect_isometry` | Applying the same real linear isometry to the coupled and baseline states preserves their regularized effect ratio. |
+| `relationalEffect_scale` | Positive rescaling preserves the ratio when the regularizer is scaled with the states. |
+
+Slater's condition here means an actual point where **every** inequality is
+strict. The theorem permits arbitrary finite constraint families, including the
+empty family, over a real Hilbert space. Convexity is global and differentiability
+is required at the candidate point. This is standard convex optimization,
+without a novelty claim. The contextual theorems specify their transformations
+and observable; they do not infer covariance of an unspecified scientific H.
+
 ## Limits and unresolved obligations
 
-The Lipschitz-gradient derivation is closed by this tranche. KKT **necessity**, existence of multipliers and the appropriate constraint qualification remain open; the sufficiency theorem does not establish them. Equality constraints, nonsmooth objectives and nonconvex global optimality are outside this theorem.
+The Lipschitz-gradient and convex KKT derivations are closed under the stated hypotheses, including multiplier existence and necessity with Slater's condition. Equality constraints, nonsmooth objectives and nonconvex global optimality are outside these theorems. Necessity is not claimed when strict feasibility fails.
 
-The proposed field dynamics still need a fixed spatial domain, coefficient and kernel assumptions, function spaces, boundary/initial conditions, and the claimed existence, stability or conservation property. Those choices determine different mathematical problems. Contextual invariance also needs a specified transformation and observable. Its scientific usefulness remains empirical. No universal correction principle or physical field law is proved.
+The proposed field dynamics still need a fixed spatial domain, coefficient and kernel assumptions, function spaces, boundary/initial conditions, and the claimed existence, stability or conservation property. Those choices determine different mathematical problems. Two explicit contextual transformations are now proved for the relational-effect observable. Any other transformation or observable needs its own specification; scientific usefulness remains empirical. No universal correction principle or physical field law is proved.
 
 ## Evidence discipline
 

@@ -62,3 +62,5 @@ The `Lean verification` workflow builds the package and tests its strict axiom a
 The workflow result for a commit, rather than this link alone, establishes compilation.
 
 The [formal coverage](formal/COVERAGE.md) now includes the quadratic upper bound derived from a Lipschitz gradient, weak and strict gradient-step decrease, and convex KKT sufficiency. Multiplier existence/necessity and the candidate field dynamics remain open.
+
+Convex KKT necessity and multiplier existence are now formalized under Slater's condition, with an optimality equivalence and explicit isometry/scaling invariances for the relational-effect observable. See [formal coverage](formal/COVERAGE.md) for hypotheses and the remaining field-model specifications.

@@ -379,7 +379,7 @@ theorem kkt_iff_slater
     exact (kkt_sufficient f c x grad gc μ hf hc hdf hdc hμ hx hcomp hstation).2
 
 /-- The relational-effect observable from FOUNDATIONS.md. -/
-def relationalEffect {E : Type*} [NormedAddCommGroup E]
+noncomputable def relationalEffect {E : Type*} [NormedAddCommGroup E]
     (coupled baseline : E) (ε : ℝ) : ℝ :=
   ‖coupled - baseline‖ / (‖baseline‖ + ε)
 
@@ -392,8 +392,9 @@ theorem relationalEffect_isometry
     (T : E →ₗᵢ[ℝ] F) (coupled baseline : E) (ε : ℝ) :
     relationalEffect (T coupled) (T baseline) ε = relationalEffect coupled baseline ε := by
   unfold relationalEffect
-  rw [← map_sub]
-  simp
+  have h : ‖T coupled - T baseline‖ = ‖coupled - baseline‖ :=
+    (congrArg norm (T.map_sub coupled baseline)).symm.trans (T.norm_map (coupled - baseline))
+  exact congrArg₂ (fun a b : ℝ => a / (b + ε)) h (T.norm_map baseline)
 
 /-- A regularized ratio is invariant under a positive change of scale when
 the regularizer is scaled with the states, making the units explicit. -/
