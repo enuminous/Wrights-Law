@@ -60,3 +60,5 @@ The pinned [formal package](formal/VERIFICATION.md) contains kernel-checked math
 statements with an explicit [coverage and obligation ledger](formal/COVERAGE.md).
 The `Lean verification` workflow builds the package and tests its strict axiom audit.
 The workflow result for a commit, rather than this link alone, establishes compilation.
+
+The [formal coverage](formal/COVERAGE.md) now includes the quadratic upper bound derived from a Lipschitz gradient, weak and strict gradient-step decrease, and convex KKT sufficiency. Multiplier existence/necessity and the candidate field dynamics remain open.
