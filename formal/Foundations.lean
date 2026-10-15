@@ -1,3 +1,6 @@
+import Mathlib.Analysis.LocallyConvex.Separation
+import Mathlib.Analysis.Calculus.LocalExtr.Basic
+import Mathlib.Tactic.FunProp
 import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.Calculus.Gradient.Basic
@@ -181,5 +184,188 @@ theorem kkt_sufficient
     simpa [inner_add_left, sum_inner, inner_smul_left] using h
   have hf' := convex_gradient_support f x y grad hf hdf
   linarith
+
+
+/-- A convex program satisfying Slater's condition has Lagrange multipliers.
+This separation argument establishes their existence; no multiplier premise
+or first-order optimality condition is assumed. -/
+theorem convex_slater_multipliers
+    {E ι : Type*} [AddCommGroup E] [Module ℝ E] [Fintype ι]
+    (f : E → ℝ) (c : ι → E → ℝ) (x : E)
+    (hf : ConvexOn ℝ univ f) (hc : ∀ i, ConvexOn ℝ univ (c i))
+    (hx : ∀ i, c i x ≤ 0)
+    (hmin : ∀ y, (∀ i, c i y ≤ 0) → f x ≤ f y)
+    (hslater : ∃ z, ∀ i, c i z < 0) :
+    ∃ μ : ι → ℝ, (∀ i, 0 ≤ μ i) ∧ (∀ i, μ i * c i x = 0) ∧
+      ∀ y, f x ≤ f y + ∑ i, μ i * c i y := by
+  classical
+  let V : E → Option ι → ℝ := fun y j => j.elim (f y - f x) (fun i => c i y)
+  have hV (j : Option ι) : ConvexOn ℝ univ (fun y => V y j) := by
+    cases j with
+    | none => exact hf.sub_const _
+    | some i => exact hc i
+  let U : Set (Option ι → ℝ) := {v | ∃ y, ∀ j, V y j < v j}
+  have hopen : IsOpen U := by
+    have heq : U = ⋃ y : E, ⋂ j : Option ι, {v | V y j < v j} := by
+      ext v
+      simp [U]
+    rw [heq]
+    exact isOpen_iUnion fun y => isOpen_iInter_of_finite fun j =>
+      isOpen_lt continuous_const (continuous_apply j)
+  have hconv : Convex ℝ U := by
+    intro a ha b hb s t hs ht hst
+    obtain ⟨y, hy⟩ := ha
+    obtain ⟨z, hz⟩ := hb
+    refine ⟨s • y + t • z, fun j => ?_⟩
+    have hj := (hV j).2 (mem_univ y) (mem_univ z) hs ht hst
+    change V (s • y + t • z) j < s * a j + t * b j
+    change V (s • y + t • z) j ≤ s * V y j + t * V z j at hj
+    rcases lt_or_eq_of_le hs with hs' | hs'
+    · exact hj.trans_lt (add_lt_add_of_lt_of_le
+        (mul_lt_mul_of_pos_left (hy j) hs') (mul_le_mul_of_nonneg_left (hz j).le ht))
+    · have hs0 : s = 0 := hs'.symm
+      have ht1 : t = 1 := by linarith
+      simpa [hs0, ht1] using hz j
+  have hzero : (0 : Option ι → ℝ) ∉ U := by
+    rintro ⟨y, hy⟩
+    have hfeas : ∀ i, c i y ≤ 0 := fun i => (hy (some i)).le
+    have hobj := hy none
+    have := hmin y hfeas
+    change f y - f x < 0 at hobj
+    linarith
+  obtain ⟨L, hL⟩ := geometric_hahn_banach_point_open hconv hopen hzero
+  have hpos : ∀ v ∈ U, 0 < L v := by simpa using hL
+  have hbound (y : E) (v : Option ι → ℝ) (hv : ∀ j, V y j ≤ v j) : 0 ≤ L v := by
+    have hcont : Continuous (fun t : ℝ => L (v + t • (fun _ => (1 : ℝ)))) := by
+      fun_prop
+    have hlim := hcont.continuousAt.tendsto.mono_left
+      (nhdsWithin_le_nhds : 𝓝[>] (0 : ℝ) ≤ 𝓝 0)
+    have hevent : ∀ᶠ t : ℝ in 𝓝[>] 0, 0 ≤ L (v + t • (fun _ => (1 : ℝ))) :=
+      Filter.eventually_of_mem self_mem_nhdsWithin fun t ht =>
+        (hpos _ ⟨y, fun j => by
+          change V y j < v j + t * 1
+          have := hv j
+          change 0 < t at ht
+          linarith⟩).le
+    simpa using le_of_tendsto hlim hevent
+  let w : Option ι → ℝ := fun j => L (Pi.single j 1)
+  have hw (j : Option ι) : 0 ≤ w j := by
+    by_contra h
+    have hn : w j < 0 := lt_of_not_ge h
+    let b := V x
+    have hb : 0 ≤ L b := hbound x b fun _ => le_rfl
+    let t := (L b + 1) / (-w j)
+    have ht : 0 ≤ t := div_nonneg (by linarith) (by linarith)
+    have hb' : 0 ≤ L (b + t • Pi.single j 1) := hbound x _ fun k => by
+      change b k ≤ b k + t * (Pi.single j (1 : ℝ) k)
+      have hp : 0 ≤ (Pi.single j (1 : ℝ) k) := by
+        by_cases hk : j = k <;> simp [Pi.single_apply, hk]
+      linarith [mul_nonneg ht hp]
+    have htw : t * w j = -(L b + 1) := by
+      dsimp [t]
+      field_simp
+      <;> ring
+    rw [map_add, map_smul] at hb'
+    change 0 ≤ L b + t * w j at hb'
+    linarith
+  have hrepr (v : Option ι → ℝ) : L v = ∑ j, w j * v j := by
+    have hv : v = ∑ j : Option ι, v j • Pi.single j 1 := by
+      ext k
+      simp [Finset.sum_apply, Pi.single_apply]
+    conv_lhs => rw [hv]
+    simp [map_sum, map_smul, w, mul_comm]
+  have hraw (y : E) : 0 ≤ w none * (f y - f x) + ∑ i, w (some i) * c i y := by
+    have h := hbound y (V y) fun _ => le_rfl
+    simpa [hrepr, V, Fintype.sum_option, add_comm] using h
+  have hsome : w none ≠ 0 ∨ ∃ i, w (some i) ≠ 0 := by
+    by_contra h
+    push_neg at h
+    have htest := hpos (fun j => V x j + 1) ⟨x, fun j => by linarith⟩
+    rw [hrepr] at htest
+    simp [Fintype.sum_option, h.1, h.2] at htest
+  obtain ⟨z, hz⟩ := hslater
+  have hα : 0 < w none := by
+    rcases (hw none).eq_or_lt with hα | hα
+    · have hα0 : w none = 0 := hα.symm
+      obtain ⟨i, hi⟩ := hsome.resolve_left hα0
+      have hi0 : 0 < w (some i) := lt_of_le_of_ne (hw _) (Ne.symm hi)
+      have hsum : (∑ j, w (some j) * c j z) < 0 :=
+        Finset.sum_neg' (fun j _ => mul_nonpos_of_nonneg_of_nonpos (hw _) (hz j).le)
+          ⟨i, Finset.mem_univ _, mul_neg_of_pos_of_neg hi0 (hz i)⟩
+      have := hraw z
+      simp only [hα0, zero_mul, zero_add] at this
+      linarith
+    · exact hα
+  have hcomp : ∀ i, w (some i) * c i x = 0 := by
+    have hnonpos (i : ι) : w (some i) * c i x ≤ 0 :=
+      mul_nonpos_of_nonneg_of_nonpos (hw _) (hx i)
+    have hzsum : (∑ i, w (some i) * c i x) = 0 :=
+      le_antisymm (Finset.sum_nonpos fun i _ => hnonpos i) (by simpa using hraw x)
+    exact fun i => (Finset.sum_eq_zero_iff_of_nonpos (fun j _ => hnonpos j)).mp
+      hzsum i (Finset.mem_univ _)
+  refine ⟨fun i => w (some i) / w none, fun i => div_nonneg (hw _) hα.le, ?_, ?_⟩
+  · intro i
+    rw [div_mul_eq_mul_div, hcomp, zero_div]
+  · intro y
+    have hmul : w none * (f y - f x + ∑ i, (w (some i) / w none) * c i y) =
+        w none * (f y - f x) + ∑ i, w (some i) * c i y := by
+      rw [mul_add, Finset.mul_sum]
+      congr 1
+      apply Finset.sum_congr rfl
+      intro i _
+      field_simp
+    have hnonneg : 0 ≤ f y - f x + ∑ i, (w (some i) / w none) * c i y :=
+      (mul_nonneg_iff_of_pos_left hα).mp (hmul ▸ hraw y)
+    linarith
+
+/-- KKT necessity for the same convex inequality problem as kkt_sufficient,
+with Slater's condition as the explicit constraint qualification. -/
+theorem kkt_necessary_slater
+    {E ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
+    [Fintype ι] (f : E → ℝ) (c : ι → E → ℝ) (x grad : E) (gc : ι → E)
+    (hf : ConvexOn ℝ univ f) (hc : ∀ i, ConvexOn ℝ univ (c i))
+    (hdf : HasGradientAt f grad x) (hdc : ∀ i, HasGradientAt (c i) (gc i) x)
+    (hx : ∀ i, c i x ≤ 0)
+    (hmin : ∀ y, (∀ i, c i y ≤ 0) → f x ≤ f y)
+    (hslater : ∃ z, ∀ i, c i z < 0) :
+    ∃ μ : ι → ℝ, (∀ i, 0 ≤ μ i) ∧ (∀ i, μ i * c i x = 0) ∧
+      grad + ∑ i, μ i • gc i = 0 := by
+  obtain ⟨μ, hμ, hcomp, hlag⟩ := convex_slater_multipliers f c x hf hc hx hmin hslater
+  refine ⟨μ, hμ, hcomp, ?_⟩
+  let d := grad + ∑ i, μ i • gc i
+  let q : ℝ → ℝ := fun t => f (x + t • d) + ∑ i, μ i * c i (x + t • d)
+  have hp : HasDerivAt (fun t : ℝ => x + t • d) d 0 := by
+    simpa using ((hasDerivAt_id (0 : ℝ)).smul_const d).const_add x
+  have hdf0 : HasGradientAt f grad (x + (0 : ℝ) • d) := by simpa using hdf
+  have hdc0 (i : ι) : HasGradientAt (c i) (gc i) (x + (0 : ℝ) • d) := by
+    simpa using hdc i
+  have hq : HasDerivAt q (inner ℝ grad d + ∑ i, μ i * inner ℝ (gc i) d) 0 := by
+    exact (hdf0.hasFDerivAt.comp_hasDerivAt 0 hp).add
+      (HasDerivAt.fun_sum fun i _ => ((hdc0 i).hasFDerivAt.comp_hasDerivAt 0 hp).const_mul (μ i))
+  have hminq : IsLocalMin q 0 := by
+    apply Filter.Eventually.of_forall
+    intro t
+    simpa [q, hcomp] using hlag (x + t • d)
+  have hz := hminq.hasDerivAt_eq_zero hq
+  have hd : inner ℝ d d = 0 := by
+    simpa [d, inner_add_left, sum_inner, inner_smul_left] using hz
+  exact (inner_self_eq_zero.mp hd)
+
+/-- Necessary and sufficient KKT conditions for a convex differentiable
+inequality program with a strictly feasible point. -/
+theorem kkt_iff_slater
+    {E ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
+    [Fintype ι] (f : E → ℝ) (c : ι → E → ℝ) (x grad : E) (gc : ι → E)
+    (hf : ConvexOn ℝ univ f) (hc : ∀ i, ConvexOn ℝ univ (c i))
+    (hdf : HasGradientAt f grad x) (hdc : ∀ i, HasGradientAt (c i) (gc i) x)
+    (hx : ∀ i, c i x ≤ 0) (hslater : ∃ z, ∀ i, c i z < 0) :
+    (∀ y, (∀ i, c i y ≤ 0) → f x ≤ f y) ↔
+      ∃ μ : ι → ℝ, (∀ i, 0 ≤ μ i) ∧ (∀ i, μ i * c i x = 0) ∧
+        grad + ∑ i, μ i • gc i = 0 := by
+  constructor
+  · intro hmin
+    exact kkt_necessary_slater f c x grad gc hf hc hdf hdc hx hmin hslater
+  · rintro ⟨μ, hμ, hcomp, hstation⟩
+    exact (kkt_sufficient f c x grad gc μ hf hc hdf hdc hμ hx hcomp hstation).2
 
 end Wright
