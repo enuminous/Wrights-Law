@@ -28,7 +28,7 @@
 </details>
 <!-- ENUMINOUS-NETWORK:END -->
 
-Flat-root GitHub-ready research package based on Matthew Chenoweth Wright's January 28, 2025 paper (with Millie Sievert).
+Research and formal-verification package based on Matthew Chenoweth Wright's January 28, 2025 paper (with Millie Sievert).
 
 **Status: proposed mathematical framework, not a verified universal law or new fundamental force.**
 
@@ -40,7 +40,7 @@ python -m unittest -v test_emerg001.py
 python emerg001.py --seeds 12 --out results.csv
 ```
 
-Outputs `results.csv` and `results.csv.summary.json`. Nothing is presented as experimentally confirmed in advance. All files are at repository root.
+Outputs `results.csv` and `results.csv.summary.json`. Nothing is presented as experimentally confirmed in advance. The Lean package is in `formal/`.
 
 ## Contents
 
@@ -52,7 +52,7 @@ Outputs `results.csv` and `results.csv.summary.json`. Nothing is presented as ex
 - `SOURCE.md`: source provenance
 - `requirements.txt`: dependencies
 
-Suggested repository: `enuminous/Emergentology-Wrights-Law`. This ZIP does not publish to GitHub.
+The published repository is [enuminous/Wrights-Law](https://github.com/enuminous/Wrights-Law).
 
 ## Lean 4 verification
 
@@ -61,6 +61,4 @@ statements with an explicit [coverage and obligation ledger](formal/COVERAGE.md)
 The `Lean verification` workflow builds the package and tests its strict axiom audit.
 The workflow result for a commit, rather than this link alone, establishes compilation.
 
-The [formal coverage](formal/COVERAGE.md) now includes the quadratic upper bound derived from a Lipschitz gradient, weak and strict gradient-step decrease, and convex KKT sufficiency. Multiplier existence/necessity and the candidate field dynamics remain open.
-
-Convex KKT necessity and multiplier existence are now formalized under Slater's condition, with an optimality equivalence and explicit isometry/scaling invariances for the relational-effect observable. See [formal coverage](formal/COVERAGE.md) for hypotheses and the remaining field-model specifications.
+The [formal coverage](formal/COVERAGE.md) includes a quadratic upper bound derived from a Lipschitz gradient, weak and strict gradient-step decrease, and necessary and sufficient convex KKT conditions under Slater's condition. Multiplier existence is proved. Linear-isometry and consistent positive-scaling invariances are proved for the relational-effect ratio. The proposed continuum fields still require a fixed PDE specification.
