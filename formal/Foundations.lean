@@ -14,6 +14,7 @@ import Mathlib.Tactic.Positivity
 
 namespace Wright
 open Set
+open scoped Topology Filter
 
 /-- Conditional continuous-time correction law on a specified interval.
 Continuity at the endpoints and derivatives on the interior are explicit. -/
@@ -202,7 +203,13 @@ theorem convex_slater_multipliers
   let V : E → Option ι → ℝ := fun y j => j.elim (f y - f x) (fun i => c i y)
   have hV (j : Option ι) : ConvexOn ℝ univ (fun y => V y j) := by
     cases j with
-    | none => exact hf.sub_const _
+    | none =>
+        refine ⟨hf.1, ?_⟩
+        intro y hy z hz s t hs ht hst
+        have h := hf.2 hy hz hs ht hst
+        change f (s • y + t • z) - f x ≤ s * (f y - f x) + t * (f z - f x)
+        change f (s • y + t • z) ≤ s * f y + t * f z at h
+        nlinarith
     | some i => exact hc i
   let U : Set (Option ι → ℝ) := {v | ∃ y, ∀ j, V y j < v j}
   have hopen : IsOpen U := by
@@ -348,7 +355,9 @@ theorem kkt_necessary_slater
     simpa [q, hcomp] using hlag (x + t • d)
   have hz := hminq.hasDerivAt_eq_zero hq
   have hd : inner ℝ d d = 0 := by
-    simpa [d, inner_add_left, sum_inner, inner_smul_left] using hz
+    change inner ℝ (grad + ∑ i, μ i • gc i) d = 0
+    rw [inner_add_left, sum_inner]
+    simpa [inner_smul_left] using hz
   exact (inner_self_eq_zero.mp hd)
 
 /-- Necessary and sufficient KKT conditions for a convex differentiable
